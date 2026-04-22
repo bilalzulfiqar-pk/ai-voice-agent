@@ -1,0 +1,268 @@
+@import "tailwindcss";
+
+:root {
+  --color-background: #07111f;
+  --color-panel: #0e1a2b;
+  --color-surface: #132238;
+  --color-primary: #7c5cff;
+  --color-cyan: #19d3ff;
+  --color-accent: #33f0b5;
+  --color-text-primary: #f4f7fb;
+  --color-text-secondary: #9cb2c9;
+  --color-warning: #ffb84d;
+  --color-error: #ff6b7a;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(124, 92, 255, 0.22), transparent 30rem),
+    radial-gradient(circle at top right, rgba(25, 211, 255, 0.14), transparent 30rem),
+    radial-gradient(circle at bottom, rgba(51, 240, 181, 0.08), transparent 28rem),
+    var(--color-background);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(4, 10, 19, 0.64) 0%, rgba(7, 17, 31, 0.9) 100%),
+    var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+.aurora-grid {
+  background:
+    linear-gradient(180deg, rgba(7, 17, 31, 0.1) 0%, rgba(7, 17, 31, 0.45) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 6.25rem,
+      rgba(255, 255, 255, 0.03) 6.25rem,
+      rgba(255, 255, 255, 0.03) calc(6.25rem + 1px)
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 6.25rem,
+      rgba(255, 255, 255, 0.025) 6.25rem,
+      rgba(255, 255, 255, 0.025) calc(6.25rem + 1px)
+    );
+}
+
+.auralis-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 26, 43, 0.78), rgba(10, 18, 31, 0.7));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.auralis-panel-elevated {
+  box-shadow:
+    0 18px 50px rgba(3, 8, 17, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.control-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.95rem 1rem;
+  color: var(--color-text-primary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.control-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124, 92, 255, 0.36);
+  background: rgba(124, 92, 255, 0.1);
+  box-shadow: 0 0 28px rgba(124, 92, 255, 0.12);
+}
+
+.control-button-active {
+  border-color: rgba(25, 211, 255, 0.34);
+  background: rgba(25, 211, 255, 0.12);
+  box-shadow: 0 0 28px rgba(25, 211, 255, 0.12);
+}
+
+.control-button-danger {
+  border-color: rgba(255, 107, 122, 0.22);
+  color: var(--color-error);
+}
+
+.control-button-danger:hover {
+  border-color: rgba(255, 107, 122, 0.4);
+  background: rgba(255, 107, 122, 0.1);
+  box-shadow: none;
+}
+
+.voice-orb-shell::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, rgba(124, 92, 255, 0.28) 0%, rgba(124, 92, 255, 0.03) 55%),
+    radial-gradient(circle at 30% 30%, rgba(25, 211, 255, 0.3) 0%, transparent 42%);
+  filter: blur(36px);
+}
+
+.voice-orb-ring {
+  border: 1px solid rgba(124, 92, 255, 0.18);
+  opacity: 0.82;
+  box-shadow: 0 0 32px rgba(124, 92, 255, 0.08);
+}
+
+.voice-orb-ring-active {
+  animation: voice-ring 2.8s ease-in-out infinite;
+}
+
+.voice-orb-ring-thinking {
+  border-color: rgba(124, 92, 255, 0.36);
+}
+
+.voice-orb-ring-speaking {
+  border-color: rgba(25, 211, 255, 0.36);
+  box-shadow: 0 0 42px rgba(25, 211, 255, 0.16);
+}
+
+.voice-orb-ring-failed {
+  border-color: rgba(255, 107, 122, 0.32);
+}
+
+.voice-orb-ring-interrupted {
+  animation: voice-ring-collapse 420ms ease both;
+}
+
+.voice-orb-core {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 18px 60px rgba(4, 9, 19, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.voice-orb-core::after {
+  content: "";
+  position: absolute;
+  inset: -28%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(124, 92, 255, 0.16),
+    rgba(25, 211, 255, 0.26),
+    rgba(51, 240, 181, 0.14),
+    rgba(124, 92, 255, 0.16)
+  );
+  opacity: 0.7;
+  animation: orb-rotate 12s linear infinite;
+}
+
+.voice-orb-core > * {
+  position: relative;
+  z-index: 1;
+}
+
+.voice-orb-core-idle {
+  background: radial-gradient(circle at 30% 30%, rgba(124, 92, 255, 0.58), rgba(12, 21, 37, 0.92) 70%);
+}
+
+.voice-orb-core-connecting {
+  background: radial-gradient(circle at 35% 30%, rgba(124, 92, 255, 0.65), rgba(14, 26, 43, 0.95) 68%);
+}
+
+.voice-orb-core-listening {
+  background: radial-gradient(circle at 35% 30%, rgba(25, 211, 255, 0.62), rgba(12, 24, 38, 0.95) 68%);
+}
+
+.voice-orb-core-thinking {
+  background: radial-gradient(circle at 35% 30%, rgba(124, 92, 255, 0.72), rgba(18, 26, 46, 0.96) 68%);
+}
+
+.voice-orb-core-speaking {
+  animation: voice-core-speaking 1.8s ease-in-out infinite;
+  background: radial-gradient(circle at 35% 30%, rgba(51, 240, 181, 0.58), rgba(13, 33, 45, 0.96) 68%);
+}
+
+.voice-orb-core-reconnecting {
+  background: radial-gradient(circle at 35% 30%, rgba(255, 184, 77, 0.42), rgba(22, 22, 34, 0.96) 68%);
+}
+
+.voice-orb-core-failed {
+  background: radial-gradient(circle at 35% 30%, rgba(255, 107, 122, 0.48), rgba(27, 14, 20, 0.96) 68%);
+}
+
+.voice-orb-core-interrupted {
+  animation: voice-core-collapse 420ms ease both;
+}
+
+@keyframes voice-ring {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes voice-core-speaking {
+  0%,
+  100% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes orb-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes voice-ring-collapse {
+  0% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.88);
+    opacity: 0.25;
+  }
+}
+
+@keyframes voice-core-collapse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.92);
+  }
+}

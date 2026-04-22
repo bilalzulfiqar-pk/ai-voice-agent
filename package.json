@@ -1,0 +1,12 @@
+{
+  "name": "ai-voice-agent",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "lint:web": "npm --prefix apps/web run lint",
+    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "test:agent": "cmd /c \"cd apps\\agent && .venv\\Scripts\\python -m unittest discover -s tests -v\""
+  }
+}
