@@ -668,7 +668,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                 <button
                   type="button"
                   onClick={() => void handleStartSession()}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[color:var(--color-primary)]/35 bg-[linear-gradient(135deg,rgba(124,92,255,0.9),rgba(25,211,255,0.48))] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_38px_rgba(124,92,255,0.28)] transition hover:brightness-110"
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[color:var(--color-primary)]/35 bg-[linear-gradient(135deg,rgba(124,92,255,0.9),rgba(25,211,255,0.48))] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_38px_rgba(124,92,255,0.28)] transition hover:brightness-110"
                 >
                   <Mic className="h-4 w-4" />
                   Start conversation

@@ -15,6 +15,8 @@ type VoiceOrbProps = {
 export function VoiceOrb({ state, isInterrupted = false }: VoiceOrbProps) {
   const liveState =
     state === "listening" || state === "thinking" || state === "speaking";
+  const showWaveform =
+    state === "listening" || state === "thinking" || state === "speaking";
 
   return (
     <div className="voice-orb-shell relative flex h-[18rem] items-center justify-center sm:h-[21rem]">
@@ -53,7 +55,24 @@ export function VoiceOrb({ state, isInterrupted = false }: VoiceOrbProps) {
           isInterrupted && "voice-orb-core-interrupted",
         )}
       >
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-2">
+          {showWaveform && (
+            <div
+              className={clsx(
+                "voice-orb-waveform",
+                state === "listening" && "voice-orb-waveform-listening",
+                state === "thinking" && "voice-orb-waveform-thinking",
+                state === "speaking" && "voice-orb-waveform-speaking",
+              )}
+              aria-hidden="true"
+            >
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
           <span className="text-[0.58rem] text-white/70">Auralis</span>
           <span className="text-[0.7rem] text-white">Voice</span>
         </div>
