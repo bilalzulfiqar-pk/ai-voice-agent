@@ -308,6 +308,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isPressingToTalk, setIsPressingToTalk] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const [isSystemStatusOpen, setIsSystemStatusOpen] = useState(false);
   const [interruptedIds, setInterruptedIds] = useState<string[]>([]);
   const [liveTranscriptIds, setLiveTranscriptIds] = useState<string[]>([]);
   const [needsFreshSession, setNeedsFreshSession] = useState(false);
@@ -607,7 +608,9 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
         value:
           agent.state === "thinking"
             ? "Reasoning"
-            : currentCapabilities.preemptiveGeneration && session.isConnected
+            : livePartialEntry?.role === "user" &&
+                currentCapabilities.preemptiveGeneration &&
+                session.isConnected
               ? "Preparing"
               : session.isConnected
                 ? "Ready"
@@ -1188,72 +1191,92 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                       label={capabilities?.textInput ? "Text enabled" : "Voice only"}
                       tone={capabilities?.textInput ? "accent" : "neutral"}
                     />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {pipelineItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className={`pipeline-card ${pipelineCardToneClass(item.value)}`}
+                    <button
+                      type="button"
+                      onClick={() => setIsSystemStatusOpen((open) => !open)}
+                      className="control-button !rounded-full !px-3.5 !py-2 text-[0.75rem]"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65">
-                          {item.label}
+                      <Settings2 className="h-4 w-4" />
+                      {isSystemStatusOpen ? "Hide details" : "Show details"}
+                      <ChevronDown
+                        className={`h-4 w-4 transition ${
+                          isSystemStatusOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {isSystemStatusOpen && (
+                  <div className="system-status-content animate-[panel-fade-up_360ms_cubic-bezier(0.22,1,0.36,1)]">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      {pipelineItems.map((item) => (
+                        <div
+                          key={item.label}
+                          className={`pipeline-card ${pipelineCardToneClass(item.value)}`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65">
+                              {item.label}
+                            </p>
+                            <span className="pipeline-card-orbit" aria-hidden="true" />
+                          </div>
+                          <div className="mt-4">
+                            <StatusChip
+                              label={item.value}
+                              tone={toneForPipeline(item.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 grid gap-3 md:grid-cols-3">
+                      <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+                        <div className="flex items-center gap-2 text-[color:var(--color-cyan)]">
+                          <Cpu className="h-4 w-4" />
+                          <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
+                            Models
+                          </p>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
+                          STT: {capabilities?.sttModel ?? "deepgram/flux-general-en"}
+                          <br />
+                          LLM: {capabilities?.llmModel ?? "openai/gpt-4.1-mini"}
+                          <br />
+                          TTS: {capabilities?.ttsModel ?? "cartesia/sonic-3"}
                         </p>
-                        <span className="pipeline-card-orbit" aria-hidden="true" />
                       </div>
-                      <div className="mt-4">
-                        <StatusChip label={item.value} tone={toneForPipeline(item.value)} />
+
+                      <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+                        <div className="flex items-center gap-2 text-[color:var(--color-primary)]">
+                          <ShieldCheck className="h-4 w-4" />
+                          <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
+                            Realtime behavior
+                          </p>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
+                          Turn detection, short in-session context, adaptive interruption
+                          handling, and inbound BVC noise cancellation stay active during
+                          the call.
+                        </p>
+                      </div>
+
+                      <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+                        <div className="flex items-center gap-2 text-[color:var(--color-accent)]">
+                          <MessageSquareText className="h-4 w-4" />
+                          <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
+                            Session memory
+                          </p>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
+                          Auralis keeps the current conversation context in memory for
+                          the live session only.
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 grid gap-3 md:grid-cols-3">
-                  <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
-                    <div className="flex items-center gap-2 text-[color:var(--color-cyan)]">
-                      <Cpu className="h-4 w-4" />
-                      <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
-                        Models
-                      </p>
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
-                      STT: {capabilities?.sttModel ?? "deepgram/flux-general-en"}
-                      <br />
-                      LLM: {capabilities?.llmModel ?? "openai/gpt-4.1-mini"}
-                      <br />
-                      TTS: {capabilities?.ttsModel ?? "cartesia/sonic-3"}
-                    </p>
                   </div>
-
-                  <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
-                    <div className="flex items-center gap-2 text-[color:var(--color-primary)]">
-                      <ShieldCheck className="h-4 w-4" />
-                      <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
-                        Realtime behavior
-                      </p>
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
-                      Turn detection, short in-session context, adaptive interruption
-                      handling, and inbound BVC noise cancellation stay active during
-                      the call.
-                    </p>
-                  </div>
-
-                  <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4">
-                    <div className="flex items-center gap-2 text-[color:var(--color-accent)]">
-                      <MessageSquareText className="h-4 w-4" />
-                      <p className="text-sm font-semibold text-[color:var(--color-text-primary)]">
-                        Session memory
-                      </p>
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-[color:var(--color-text-secondary)]">
-                      Auralis keeps the current conversation context in memory for
-                      the live session only.
-                    </p>
-                  </div>
-                </div>
+                )}
               </section>
             </>
           )}
