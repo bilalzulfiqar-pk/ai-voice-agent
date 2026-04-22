@@ -163,10 +163,10 @@ body {
   opacity: 0.82;
   box-shadow: 0 0 32px rgba(124, 92, 255, 0.08);
   transition:
-    border-color 320ms ease,
-    box-shadow 320ms ease,
-    opacity 320ms ease,
-    transform 320ms ease;
+    border-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-ring-active {
@@ -202,10 +202,10 @@ body {
     0 18px 60px rgba(4, 9, 19, 0.44),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition:
-    background 420ms ease,
-    transform 360ms ease,
-    box-shadow 420ms ease,
-    filter 420ms ease;
+    background 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 560ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-core::before {
@@ -248,8 +248,8 @@ body {
   border-radius: inherit;
   opacity: 0;
   transition:
-    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 420ms ease;
+    opacity 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 560ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-core-layer-active {
@@ -286,31 +286,34 @@ body {
 
 .voice-orb-core-motion {
   animation: voice-core-drift 4.2s ease-in-out infinite;
-  transition: transform 420ms ease, filter 420ms ease, opacity 320ms ease;
+  transition:
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-core-motion-connecting {
-  filter: drop-shadow(0 0 8px rgba(124, 92, 255, 0.12));
+  filter: drop-shadow(0 0 7px rgba(124, 92, 255, 0.1));
 }
 
 .voice-orb-core-motion-listening {
-  filter: drop-shadow(0 0 10px rgba(25, 211, 255, 0.12));
+  filter: drop-shadow(0 0 8px rgba(25, 211, 255, 0.11));
 }
 
 .voice-orb-core-motion-thinking {
-  filter: drop-shadow(0 0 12px rgba(124, 92, 255, 0.16));
+  filter: drop-shadow(0 0 9px rgba(124, 92, 255, 0.12));
 }
 
 .voice-orb-core-motion-speaking {
-  filter: drop-shadow(0 0 16px rgba(51, 240, 181, 0.18));
+  filter: drop-shadow(0 0 10px rgba(51, 240, 181, 0.13));
 }
 
 .voice-orb-core-motion-reconnecting {
-  filter: drop-shadow(0 0 10px rgba(255, 184, 77, 0.15));
+  filter: drop-shadow(0 0 8px rgba(255, 184, 77, 0.12));
 }
 
 .voice-orb-core-motion-failed {
-  filter: drop-shadow(0 0 10px rgba(255, 107, 122, 0.16));
+  filter: drop-shadow(0 0 8px rgba(255, 107, 122, 0.12));
 }
 
 .voice-orb-waveform {
@@ -320,7 +323,10 @@ body {
   height: 0.95rem;
   opacity: 0.88;
   transform: translateY(0) scale(1);
-  transition: opacity 320ms ease, transform 320ms ease, filter 320ms ease;
+  transition:
+    opacity 440ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 440ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 440ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-waveform span {
@@ -330,10 +336,10 @@ body {
   transform-origin: center bottom;
   animation: waveform-bounce 1.4s ease-in-out infinite;
   transition:
-    background-color 380ms ease,
-    opacity 380ms ease,
-    transform 380ms ease,
-    height 380ms ease;
+    background-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .voice-orb-waveform span:nth-child(1) {
@@ -387,7 +393,7 @@ body {
 }
 
 .voice-orb-waveform-speaking span {
-  background: rgba(51, 240, 181, 0.92);
+  background: rgba(51, 240, 181, 0.88);
 }
 
 .voice-orb-waveform-reconnecting span {
@@ -411,12 +417,12 @@ body {
 @keyframes voice-ring {
   0%,
   100% {
-    transform: scale(0.96);
-    opacity: 0.5;
+    transform: scale(0.985);
+    opacity: 0.62;
   }
   50% {
-    transform: scale(1.04);
-    opacity: 1;
+    transform: scale(1.015);
+    opacity: 0.92;
   }
 }
 
@@ -485,13 +491,13 @@ body {
 
 @keyframes voice-core-drift {
   0% {
-    transform: translateY(0) scale(0.988);
+    transform: translateY(0) scale(0.996);
   }
   50% {
-    transform: translateY(-1px) scale(1.02);
+    transform: translateY(-1px) scale(1.008);
   }
   100% {
-    transform: translateY(0) scale(0.988);
+    transform: translateY(0) scale(0.996);
   }
 }
 

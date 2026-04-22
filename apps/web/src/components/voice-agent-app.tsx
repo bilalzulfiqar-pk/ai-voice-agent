@@ -283,6 +283,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const [isPressingToTalk, setIsPressingToTalk] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [interruptedIds, setInterruptedIds] = useState<string[]>([]);
+  const [hasEnteredConsole, setHasEnteredConsole] = useState(false);
   const [isActivatingConsole, setIsActivatingConsole] = useState(false);
   const [isResettingShell, setIsResettingShell] = useState(false);
   const previousAgentStateRef = useRef<string>("disconnected");
@@ -511,6 +512,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
 
   async function handleStartSession() {
     try {
+      setHasEnteredConsole(true);
       setIsActivatingConsole(true);
       setSessionError(null);
       setTextInputError(null);
@@ -592,7 +594,11 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     session.connectionState === ConnectionState.Reconnecting ||
     session.connectionState === ConnectionState.SignalReconnecting;
   const showActiveConsole =
-    session.isConnected || isConnectingOrRecovering || isActivatingConsole || isResettingShell;
+    hasEnteredConsole ||
+    session.isConnected ||
+    isConnectingOrRecovering ||
+    isActivatingConsole ||
+    isResettingShell;
   const activeConsoleTransitionClass = isResettingShell
     ? "screen-view-fade-out"
     : isActivatingConsole
