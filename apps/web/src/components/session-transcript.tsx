@@ -35,7 +35,7 @@ export function SessionTranscript({
   return (
     <div
       ref={containerRef}
-      className="flex max-h-[30rem] flex-col gap-3 overflow-y-auto pr-1"
+      className="auralis-scrollbar flex max-h-[30rem] flex-col gap-3 overflow-y-auto pr-1"
     >
       {entries.map((entry) => (
         <article
@@ -61,7 +61,7 @@ export function SessionTranscript({
             )}
             {entry.isInterrupted && (
               <span className="rounded-full bg-[color:var(--color-warning)]/15 px-2 py-0.5 text-[0.58rem] text-[color:var(--color-warning)]">
-                Cut off
+                Interrupted
               </span>
             )}
           </div>

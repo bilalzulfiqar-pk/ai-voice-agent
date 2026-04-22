@@ -19,6 +19,32 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 92, 255, 0.5) rgba(255, 255, 255, 0.03);
+}
+
+*::-webkit-scrollbar {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background:
+    linear-gradient(180deg, rgba(124, 92, 255, 0.82), rgba(25, 211, 255, 0.65))
+    padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(180deg, rgba(124, 92, 255, 0.95), rgba(51, 240, 181, 0.72))
+    padding-box;
 }
 
 html {
@@ -88,6 +114,66 @@ body {
 
 .screen-view-steady {
   animation: none;
+}
+
+.auralis-logo-mark {
+  position: relative;
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+.auralis-logo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+.auralis-logo-ring-outer {
+  border: 1px solid rgba(124, 92, 255, 0.42);
+  box-shadow: 0 0 16px rgba(124, 92, 255, 0.2);
+}
+
+.auralis-logo-ring-inner {
+  inset: 0.22rem;
+  border: 1px solid rgba(25, 211, 255, 0.42);
+  box-shadow: 0 0 14px rgba(25, 211, 255, 0.14);
+}
+
+.auralis-logo-core {
+  position: absolute;
+  inset: 0.43rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(244, 247, 251, 0.95), rgba(51, 240, 181, 0.9) 42%, rgba(124, 92, 255, 0.9) 100%);
+}
+
+.auralis-logo-bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.13rem;
+}
+
+.auralis-logo-bars span {
+  width: 0.11rem;
+  border-radius: 9999px;
+  background: rgba(244, 247, 251, 0.95);
+  box-shadow: 0 0 6px rgba(244, 247, 251, 0.18);
+}
+
+.auralis-logo-bars span:nth-child(1) {
+  height: 0.42rem;
+  opacity: 0.7;
+}
+
+.auralis-logo-bars span:nth-child(2) {
+  height: 0.7rem;
+}
+
+.auralis-logo-bars span:nth-child(3) {
+  height: 0.52rem;
+  opacity: 0.82;
 }
 
 .control-button {

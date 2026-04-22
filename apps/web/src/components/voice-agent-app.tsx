@@ -16,7 +16,6 @@ import {
   useParticipantAttributes,
   useSession,
   useSessionMessages,
-  useTranscriptions,
   type ReceivedMessage,
 } from "@livekit/components-react";
 import {
@@ -33,7 +32,6 @@ import {
   Send,
   Settings2,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Volume2,
   Waves,
@@ -44,8 +42,6 @@ import { SessionTranscript } from "@/components/session-transcript";
 import { StatusChip } from "@/components/status-chip";
 import { VoiceOrb } from "@/components/voice-orb";
 import {
-  TRANSCRIPTION_FINAL_ATTRIBUTE,
-  TRANSCRIPTION_SEGMENT_ID_ATTRIBUTE,
   parseVoiceCapabilities,
   parseVoiceSessionInfo,
   type TranscriptEntry,
@@ -269,6 +265,21 @@ function toneForPipeline(value: string): "neutral" | "live" | "success" | "accen
   return "neutral";
 }
 
+function AuralisLogoMark() {
+  return (
+    <div className="auralis-logo-mark" aria-hidden="true">
+      <span className="auralis-logo-ring auralis-logo-ring-outer" />
+      <span className="auralis-logo-ring auralis-logo-ring-inner" />
+      <span className="auralis-logo-core" />
+      <span className="auralis-logo-bars">
+        <span />
+        <span />
+        <span />
+      </span>
+    </div>
+  );
+}
+
 type VoiceAgentShellProps = {
   onSessionReset: () => void;
 };
@@ -283,10 +294,13 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const [isPressingToTalk, setIsPressingToTalk] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [interruptedIds, setInterruptedIds] = useState<string[]>([]);
+  const [liveTranscriptIds, setLiveTranscriptIds] = useState<string[]>([]);
   const [hasEnteredConsole, setHasEnteredConsole] = useState(false);
   const [isActivatingConsole, setIsActivatingConsole] = useState(false);
   const [isResettingShell, setIsResettingShell] = useState(false);
   const previousAgentStateRef = useRef<string>("disconnected");
+  const transcriptTimersRef = useRef<Map<string, number>>(new Map());
+  const previousTranscriptTextsRef = useRef<Map<string, string>>(new Map());
 
   const room = useMemo(
     () =>
@@ -313,7 +327,6 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     participant: agent.internal.agentParticipant ?? undefined,
   });
   const sessionMessages = useSessionMessages(session);
-  const transcriptions = useTranscriptions({ room: session.room });
 
   const capabilities = useMemo(
     () => parseVoiceCapabilities(agentAttributes?.["app.voice.capabilities"]),
@@ -324,44 +337,104 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     [agentAttributes],
   );
 
-  const transcriptionMeta = useMemo(() => {
-    return new Map(
-      transcriptions.map((transcription) => [
-        transcription.streamInfo.id,
-        {
-          isFinal:
-            transcription.streamInfo.attributes?.[TRANSCRIPTION_FINAL_ATTRIBUTE] ===
-            "true",
-          segmentId:
-            transcription.streamInfo.attributes?.[
-              TRANSCRIPTION_SEGMENT_ID_ATTRIBUTE
-            ] ?? null,
-        },
-      ]),
-    );
-  }, [transcriptions]);
-
-  const transcriptEntries = useMemo(() => {
+  const baseTranscriptEntries = useMemo(() => {
     const localIdentity = session.room.localParticipant.identity;
 
     return sessionMessages.messages
       .map<TranscriptEntry>((message) => {
         const normalizedType = message.type ?? "chatMessage";
-        const meta = transcriptionMeta.get(message.id);
 
         return {
           id: message.id,
           role: getMessageRole(message, localIdentity),
           text: getMessageText(message),
           timestamp: message.timestamp,
-          isFinal: normalizedType === "chatMessage" ? true : (meta?.isFinal ?? false),
+          isFinal: normalizedType === "chatMessage",
           source: normalizedType === "chatMessage" ? "chat" : "transcript",
         };
       })
       .filter((entry) => entry.text.trim().length > 0)
       .sort((left, right) => left.timestamp - right.timestamp)
       .slice(-100);
-  }, [session.room.localParticipant.identity, sessionMessages.messages, transcriptionMeta]);
+  }, [session.room.localParticipant.identity, sessionMessages.messages]);
+
+  useEffect(() => {
+    const activeTranscriptIds = new Set(
+      baseTranscriptEntries
+        .filter((entry) => entry.source === "transcript")
+        .map((entry) => entry.id),
+    );
+
+    for (const [id, timerId] of transcriptTimersRef.current) {
+      if (activeTranscriptIds.has(id)) {
+        continue;
+      }
+
+      window.clearTimeout(timerId);
+      transcriptTimersRef.current.delete(id);
+      previousTranscriptTextsRef.current.delete(id);
+      setLiveTranscriptIds((currentIds) =>
+        currentIds.includes(id)
+          ? currentIds.filter((currentId) => currentId !== id)
+          : currentIds,
+      );
+    }
+
+    for (const entry of baseTranscriptEntries) {
+      if (entry.source !== "transcript") {
+        continue;
+      }
+
+      const previousText = previousTranscriptTextsRef.current.get(entry.id);
+      if (previousText === entry.text) {
+        continue;
+      }
+
+      previousTranscriptTextsRef.current.set(entry.id, entry.text);
+      const existingTimer = transcriptTimersRef.current.get(entry.id);
+      if (existingTimer) {
+        window.clearTimeout(existingTimer);
+      }
+
+      setLiveTranscriptIds((currentIds) =>
+        currentIds.includes(entry.id) ? currentIds : [...currentIds, entry.id],
+      );
+
+      const timerId = window.setTimeout(() => {
+        transcriptTimersRef.current.delete(entry.id);
+        setLiveTranscriptIds((currentIds) =>
+          currentIds.filter((currentId) => currentId !== entry.id),
+        );
+      }, 420);
+
+      transcriptTimersRef.current.set(entry.id, timerId);
+    }
+  }, [baseTranscriptEntries]);
+
+  useEffect(() => {
+    return () => {
+      for (const timerId of transcriptTimersRef.current.values()) {
+        window.clearTimeout(timerId);
+      }
+      transcriptTimersRef.current.clear();
+    };
+  }, []);
+
+  const transcriptEntries = useMemo(
+    () =>
+      baseTranscriptEntries.map((entry) => {
+        const isInterrupted = interruptedIds.includes(entry.id);
+
+        return {
+          ...entry,
+          isInterrupted,
+          isFinal:
+            entry.source === "chat" ||
+            (!liveTranscriptIds.includes(entry.id) && !isInterrupted),
+        };
+      }),
+    [baseTranscriptEntries, interruptedIds, liveTranscriptIds],
+  );
 
   const deferredEntries = useDeferredValue(transcriptEntries);
 
@@ -376,9 +449,14 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     const timeoutId = window.setTimeout(() => {
       const lastAssistant = [...transcriptEntries]
         .reverse()
-        .find((entry) => entry.role === "assistant");
+        .find(
+          (entry) =>
+            entry.role === "assistant" &&
+            entry.source === "transcript" &&
+            liveTranscriptIds.includes(entry.id),
+        );
 
-      if (!lastAssistant || lastAssistant.isFinal) {
+      if (!lastAssistant) {
         return;
       }
 
@@ -390,24 +468,20 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     }, 140);
 
     return () => window.clearTimeout(timeoutId);
-  }, [agent.state, transcriptEntries]);
+  }, [agent.state, liveTranscriptIds, transcriptEntries]);
 
   const activeInterruptedIds = useMemo(
     () =>
       interruptedIds.filter((id) => {
         const matchingEntry = transcriptEntries.find((entry) => entry.id === id);
-        return matchingEntry ? !matchingEntry.isFinal : false;
+        return Boolean(matchingEntry);
       }),
     [interruptedIds, transcriptEntries],
   );
 
   const decoratedEntries = useMemo(
-    () =>
-      deferredEntries.map((entry) => ({
-        ...entry,
-        isInterrupted: activeInterruptedIds.includes(entry.id),
-      })),
-    [activeInterruptedIds, deferredEntries],
+    () => deferredEntries,
+    [deferredEntries],
   );
 
   const livePartialEntry = useMemo(
@@ -620,7 +694,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
             <div>
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(124,92,255,0.22),rgba(25,211,255,0.14))] text-[color:var(--color-text-primary)] shadow-[0_0_32px_rgba(124,92,255,0.18)]">
-                  <Sparkles className="h-5 w-5" />
+                  <AuralisLogoMark />
                 </div>
                 <div>
                   <p className="font-heading text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text-primary)]">
@@ -760,15 +834,25 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => void handleEndSession()}
-                      disabled={!session.isConnected}
-                      className="control-button control-button-danger"
-                    >
-                      <PhoneOff className="h-4 w-4" />
-                      End session
-                    </button>
+                    {session.isConnected ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleEndSession()}
+                        className="control-button control-button-danger"
+                      >
+                        <PhoneOff className="h-4 w-4" />
+                        End session
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void handleStartSession()}
+                        className="control-button"
+                      >
+                        <Mic className="h-4 w-4" />
+                        Start session
+                      </button>
+                    )}
 
                     <button
                       type="button"
