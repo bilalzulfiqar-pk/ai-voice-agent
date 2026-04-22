@@ -256,6 +256,80 @@ body {
   box-shadow: none;
 }
 
+.pipeline-card {
+  --pipeline-accent: rgba(156, 178, 201, 0.42);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--pipeline-accent) 16%, transparent), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  padding: 1rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 40px rgba(3, 8, 17, 0.18);
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.pipeline-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 1rem;
+  width: 4.25rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--pipeline-accent), transparent);
+  opacity: 0.9;
+}
+
+.pipeline-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--pipeline-accent) 42%, rgba(255, 255, 255, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 46px rgba(3, 8, 17, 0.22);
+}
+
+.pipeline-card-live {
+  --pipeline-accent: rgba(25, 211, 255, 0.88);
+}
+
+.pipeline-card-success {
+  --pipeline-accent: rgba(51, 240, 181, 0.84);
+}
+
+.pipeline-card-accent {
+  --pipeline-accent: rgba(124, 92, 255, 0.88);
+}
+
+.pipeline-card-neutral {
+  --pipeline-accent: rgba(156, 178, 201, 0.5);
+}
+
+.pipeline-card-orbit {
+  position: relative;
+  display: inline-flex;
+  height: 0.9rem;
+  width: 0.9rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--pipeline-accent) 58%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pipeline-accent) 18%, transparent);
+}
+
+.pipeline-card-orbit::before {
+  content: "";
+  position: absolute;
+  inset: 0.18rem;
+  border-radius: inherit;
+  background: var(--pipeline-accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pipeline-accent) 28%, transparent);
+}
+
 .voice-orb-shell::before {
   content: "";
   position: absolute;

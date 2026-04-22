@@ -267,6 +267,19 @@ function toneForPipeline(value: string): "neutral" | "live" | "success" | "accen
   return "neutral";
 }
 
+function pipelineCardToneClass(value: string) {
+  switch (toneForPipeline(value)) {
+    case "live":
+      return "pipeline-card-live";
+    case "success":
+      return "pipeline-card-success";
+    case "accent":
+      return "pipeline-card-accent";
+    default:
+      return "pipeline-card-neutral";
+  }
+}
+
 function AuralisLogoMark() {
   return (
     <div className="auralis-logo-mark" aria-hidden="true">
@@ -1182,13 +1195,15 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                   {pipelineItems.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-4"
+                      className={`pipeline-card ${pipelineCardToneClass(item.value)}`}
                     >
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65">
-                        {item.label}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-current text-[color:var(--color-cyan)]" />
+                      <div className="flex items-start justify-between gap-4">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65">
+                          {item.label}
+                        </p>
+                        <span className="pipeline-card-orbit" aria-hidden="true" />
+                      </div>
+                      <div className="mt-4">
                         <StatusChip label={item.value} tone={toneForPipeline(item.value)} />
                       </div>
                     </div>
