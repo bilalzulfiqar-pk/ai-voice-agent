@@ -59,6 +59,7 @@ const SAMPLE_PROMPTS = [
   "Help me brainstorm a startup idea",
   "Summarize this concept in simple terms",
 ];
+const LIVE_TRANSCRIPT_SETTLE_MS = 1500;
 
 const STATE_COPY = {
   idle: {
@@ -285,7 +286,7 @@ type VoiceAgentShellProps = {
 };
 
 function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
-  const [roomName] = useState(createRoomName);
+  const [sessionSeed, setSessionSeed] = useState(0);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [textInputValue, setTextInputValue] = useState("");
   const [textInputError, setTextInputError] = useState<string | null>(null);
@@ -301,6 +302,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const previousAgentStateRef = useRef<string>("disconnected");
   const transcriptTimersRef = useRef<Map<string, number>>(new Map());
   const previousTranscriptTextsRef = useRef<Map<string, string>>(new Map());
+  const roomName = useMemo(() => createRoomName(), [sessionSeed]);
 
   const room = useMemo(
     () =>
@@ -313,7 +315,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
           channelCount: 1,
         },
       }),
-    [],
+    [sessionSeed],
   );
 
   const session = useSession(TOKEN_SOURCE, {
@@ -336,6 +338,17 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     () => parseVoiceSessionInfo(agentAttributes?.["app.voice.session"]),
     [agentAttributes],
   );
+
+  function resetTranscriptState() {
+    for (const timerId of transcriptTimersRef.current.values()) {
+      window.clearTimeout(timerId);
+    }
+    transcriptTimersRef.current.clear();
+    previousTranscriptTextsRef.current.clear();
+    setInterruptedIds([]);
+    setLiveTranscriptIds([]);
+    previousAgentStateRef.current = "disconnected";
+  }
 
   const baseTranscriptEntries = useMemo(() => {
     const localIdentity = session.room.localParticipant.identity;
@@ -405,7 +418,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
         setLiveTranscriptIds((currentIds) =>
           currentIds.filter((currentId) => currentId !== entry.id),
         );
-      }, 420);
+      }, LIVE_TRANSCRIPT_SETTLE_MS);
 
       transcriptTimersRef.current.set(entry.id, timerId);
     }
@@ -420,20 +433,31 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     };
   }, []);
 
+  const activeLiveTranscriptId = useMemo(
+    () =>
+      [...baseTranscriptEntries]
+        .reverse()
+        .find(
+          (entry) =>
+            entry.source === "transcript" && liveTranscriptIds.includes(entry.id),
+        )?.id ?? null,
+    [baseTranscriptEntries, liveTranscriptIds],
+  );
+
   const transcriptEntries = useMemo(
     () =>
       baseTranscriptEntries.map((entry) => {
         const isInterrupted = interruptedIds.includes(entry.id);
+        const isActiveLiveTranscript =
+          entry.source === "transcript" && entry.id === activeLiveTranscriptId;
 
         return {
           ...entry,
           isInterrupted,
-          isFinal:
-            entry.source === "chat" ||
-            (!liveTranscriptIds.includes(entry.id) && !isInterrupted),
+          isFinal: entry.source === "chat" || (!isActiveLiveTranscript && !isInterrupted),
         };
       }),
-    [baseTranscriptEntries, interruptedIds, liveTranscriptIds],
+    [activeLiveTranscriptId, baseTranscriptEntries, interruptedIds],
   );
 
   const deferredEntries = useDeferredValue(transcriptEntries);
@@ -453,7 +477,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
           (entry) =>
             entry.role === "assistant" &&
             entry.source === "transcript" &&
-            liveTranscriptIds.includes(entry.id),
+            entry.id === activeLiveTranscriptId,
         );
 
       if (!lastAssistant) {
@@ -468,7 +492,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     }, 140);
 
     return () => window.clearTimeout(timeoutId);
-  }, [agent.state, liveTranscriptIds, transcriptEntries]);
+  }, [activeLiveTranscriptId, agent.state, transcriptEntries]);
 
   const activeInterruptedIds = useMemo(
     () =>
@@ -485,8 +509,11 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   );
 
   const livePartialEntry = useMemo(
-    () => [...transcriptEntries].reverse().find((entry) => !entry.isFinal) ?? null,
-    [transcriptEntries],
+    () =>
+      activeLiveTranscriptId
+        ? transcriptEntries.find((entry) => entry.id === activeLiveTranscriptId) ?? null
+        : null,
+    [activeLiveTranscriptId, transcriptEntries],
   );
   const activeState = heroState(
     agent.state,
@@ -625,15 +652,18 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     setSessionError(null);
     setTextInputError(null);
     setIsPressingToTalk(false);
+    resetTranscriptState();
     if (session.isConnected) {
       await session.end();
     }
+    setSessionSeed((currentSeed) => currentSeed + 1);
   }
 
   async function handleClearSession() {
     setTextInputError(null);
     setSessionError(null);
     setIsPressingToTalk(false);
+    resetTranscriptState();
     setIsResettingShell(true);
     if (session.isConnected) {
       await session.end();

@@ -20,7 +20,7 @@
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: rgba(124, 92, 255, 0.5) rgba(255, 255, 255, 0.03);
+  scrollbar-color: rgba(92, 142, 255, 0.42) rgba(255, 255, 255, 0.02);
 }
 
 *::-webkit-scrollbar {
@@ -29,7 +29,7 @@
 }
 
 *::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 9999px;
 }
 
@@ -37,14 +37,51 @@
   border: 2px solid transparent;
   border-radius: 9999px;
   background:
-    linear-gradient(180deg, rgba(124, 92, 255, 0.82), rgba(25, 211, 255, 0.65))
+    linear-gradient(180deg, rgba(124, 92, 255, 0.58), rgba(25, 211, 255, 0.52))
     padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
   background:
-    linear-gradient(180deg, rgba(124, 92, 255, 0.95), rgba(51, 240, 181, 0.72))
+    linear-gradient(180deg, rgba(124, 92, 255, 0.78), rgba(51, 240, 181, 0.62))
     padding-box;
+}
+
+.auralis-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(25, 211, 255, 0.58) rgba(7, 17, 31, 0.34);
+  scrollbar-gutter: stable;
+}
+
+.auralis-scrollbar::-webkit-scrollbar {
+  width: 0.62rem;
+}
+
+.auralis-scrollbar::-webkit-scrollbar-track {
+  border-radius: 9999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 0 18px rgba(4, 10, 19, 0.34);
+}
+
+.auralis-scrollbar::-webkit-scrollbar-thumb {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  background:
+    linear-gradient(180deg, rgba(124, 92, 255, 0.84), rgba(25, 211, 255, 0.74));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 16px rgba(25, 211, 255, 0.12);
+}
+
+.auralis-scrollbar::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(180deg, rgba(124, 92, 255, 0.95), rgba(51, 240, 181, 0.78));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 18px rgba(51, 240, 181, 0.14);
 }
 
 html {
