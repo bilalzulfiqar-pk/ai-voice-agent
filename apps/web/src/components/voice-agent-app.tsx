@@ -258,7 +258,7 @@ function toneForPipeline(value: string): "neutral" | "live" | "success" | "accen
   ) {
     return "live";
   }
-  if (value === "Enabled" || value === "Ready") {
+  if (value === "Enabled" || value === "Ready" || value === "Adaptive") {
     return "success";
   }
   if (value === "Preparing") {

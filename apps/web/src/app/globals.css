@@ -263,12 +263,12 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1.2rem;
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--pipeline-accent) 16%, transparent), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--pipeline-accent) 11%, transparent), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.03));
   padding: 1rem;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 16px 40px rgba(3, 8, 17, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 12px 32px rgba(3, 8, 17, 0.14);
   transition:
     border-color 180ms ease,
     transform 180ms ease,
@@ -279,19 +279,19 @@ body {
   content: "";
   position: absolute;
   inset: 0 auto auto 1rem;
-  width: 4.25rem;
+  width: 3.15rem;
   height: 2px;
   border-radius: 9999px;
   background: linear-gradient(90deg, var(--pipeline-accent), transparent);
-  opacity: 0.9;
+  opacity: 0.72;
 }
 
 .pipeline-card:hover {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--pipeline-accent) 42%, rgba(255, 255, 255, 0.08));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 18px 46px rgba(3, 8, 17, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 38px rgba(3, 8, 17, 0.18);
 }
 
 .pipeline-card-live {
@@ -313,21 +313,22 @@ body {
 .pipeline-card-orbit {
   position: relative;
   display: inline-flex;
-  height: 0.9rem;
-  width: 0.9rem;
+  height: 0.78rem;
+  width: 0.78rem;
   flex-shrink: 0;
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--pipeline-accent) 58%, transparent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--pipeline-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pipeline-accent) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pipeline-accent) 12%, transparent);
+  opacity: 0.86;
 }
 
 .pipeline-card-orbit::before {
   content: "";
   position: absolute;
-  inset: 0.18rem;
+  inset: 0.16rem;
   border-radius: inherit;
   background: var(--pipeline-accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--pipeline-accent) 28%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--pipeline-accent) 18%, transparent);
 }
 
 .voice-orb-shell::before {
