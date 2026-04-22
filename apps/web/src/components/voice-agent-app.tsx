@@ -283,6 +283,8 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const [isPressingToTalk, setIsPressingToTalk] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [interruptedIds, setInterruptedIds] = useState<string[]>([]);
+  const [isActivatingConsole, setIsActivatingConsole] = useState(false);
+  const [isResettingShell, setIsResettingShell] = useState(false);
   const previousAgentStateRef = useRef<string>("disconnected");
 
   const room = useMemo(
@@ -509,6 +511,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
 
   async function handleStartSession() {
     try {
+      setIsActivatingConsole(true);
       setSessionError(null);
       setTextInputError(null);
       await session.start({
@@ -518,7 +521,11 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
           },
         },
       });
+      window.setTimeout(() => {
+        setIsActivatingConsole(false);
+      }, 420);
     } catch (error) {
+      setIsActivatingConsole(false);
       const message =
         error instanceof Error && error.message
           ? error.message
@@ -550,10 +557,14 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   async function handleClearSession() {
     setTextInputError(null);
     setSessionError(null);
+    setIsPressingToTalk(false);
+    setIsResettingShell(true);
     if (session.isConnected) {
       await session.end();
     }
-    onSessionReset();
+    window.setTimeout(() => {
+      onSessionReset();
+    }, 280);
   }
 
   async function handleSendTextInput() {
@@ -581,7 +592,15 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     session.connectionState === ConnectionState.Reconnecting ||
     session.connectionState === ConnectionState.SignalReconnecting;
   const showActiveConsole =
-    session.isConnected || isConnectingOrRecovering;
+    session.isConnected || isConnectingOrRecovering || isActivatingConsole || isResettingShell;
+  const activeConsoleTransitionClass = isResettingShell
+    ? "screen-view-fade-out"
+    : isActivatingConsole
+      ? "screen-view-fade-in"
+      : "screen-view-steady";
+  const idleTransitionClass = isActivatingConsole
+    ? "screen-view-fade-out"
+    : "screen-view-fade-in";
 
   return (
     <SessionProvider session={session}>
@@ -641,7 +660,9 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
           )}
 
           {!showActiveConsole ? (
-            <section className="flex flex-1 flex-col items-center justify-center gap-8 px-3 py-6 text-center">
+            <section
+              className={`screen-view ${idleTransitionClass} flex flex-1 flex-col items-center justify-center gap-8 px-3 py-6 text-center`}
+            >
               <div className="max-w-3xl">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--color-cyan)]">
                   Ambient Voice Studio
@@ -694,7 +715,9 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
             </section>
           ) : (
             <>
-              <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+            <section
+              className={`screen-view ${activeConsoleTransitionClass} grid gap-5 xl:grid-cols-[0.9fr_1.1fr]`}
+            >
                 <article className="auralis-panel auralis-panel-elevated flex flex-col gap-5 rounded-[1.8rem] px-5 py-5">
                   <div className="text-center">
                     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-cyan)]">
@@ -959,9 +982,11 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                     )}
                   </div>
                 </article>
-              </section>
+            </section>
 
-              <section className="auralis-panel rounded-[1.8rem] px-5 py-5">
+              <section
+                className={`auralis-panel rounded-[1.8rem] px-5 py-5 ${activeConsoleTransitionClass}`}
+              >
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-cyan)]">
