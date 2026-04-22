@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   startTransition,
   useDeferredValue,
   useEffect,
@@ -296,12 +297,16 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [interruptedIds, setInterruptedIds] = useState<string[]>([]);
   const [liveTranscriptIds, setLiveTranscriptIds] = useState<string[]>([]);
+  const [needsFreshSession, setNeedsFreshSession] = useState(false);
+  const [pendingSessionStart, setPendingSessionStart] = useState(false);
   const [hasEnteredConsole, setHasEnteredConsole] = useState(false);
   const [isActivatingConsole, setIsActivatingConsole] = useState(false);
   const [isResettingShell, setIsResettingShell] = useState(false);
   const previousAgentStateRef = useRef<string>("disconnected");
   const transcriptTimersRef = useRef<Map<string, number>>(new Map());
   const previousTranscriptTextsRef = useRef<Map<string, string>>(new Map());
+  const recentSpeakingAssistantIdRef = useRef<string | null>(null);
+  const recentSpeakingTimestampRef = useRef(0);
   const roomName = useMemo(() => createRoomName(), [sessionSeed]);
 
   const room = useMemo(
@@ -348,6 +353,8 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     setInterruptedIds([]);
     setLiveTranscriptIds([]);
     previousAgentStateRef.current = "disconnected";
+    recentSpeakingAssistantIdRef.current = null;
+    recentSpeakingTimestampRef.current = 0;
   }
 
   const baseTranscriptEntries = useMemo(() => {
@@ -466,32 +473,33 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     const previousState = previousAgentStateRef.current;
     previousAgentStateRef.current = agent.state;
 
-    if (previousState !== "speaking" || agent.state !== "listening") {
+    const activeLiveEntry = activeLiveTranscriptId
+      ? transcriptEntries.find((entry) => entry.id === activeLiveTranscriptId) ?? null
+      : null;
+
+    if (agent.state === "speaking" && activeLiveEntry?.role === "assistant") {
+      recentSpeakingAssistantIdRef.current = activeLiveEntry.id;
+      recentSpeakingTimestampRef.current = Date.now();
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      const lastAssistant = [...transcriptEntries]
-        .reverse()
-        .find(
-          (entry) =>
-            entry.role === "assistant" &&
-            entry.source === "transcript" &&
-            entry.id === activeLiveTranscriptId,
-        );
+    if (previousState === "speaking") {
+      recentSpeakingTimestampRef.current = Date.now();
+    }
 
-      if (!lastAssistant) {
-        return;
-      }
-
+    if (
+      activeLiveEntry?.role === "user" &&
+      recentSpeakingAssistantIdRef.current &&
+      Date.now() - recentSpeakingTimestampRef.current < LIVE_TRANSCRIPT_SETTLE_MS
+    ) {
+      const interruptedId = recentSpeakingAssistantIdRef.current;
       setInterruptedIds((currentIds) =>
-        currentIds.includes(lastAssistant.id)
+        currentIds.includes(interruptedId)
           ? currentIds
-          : [...currentIds, lastAssistant.id],
+          : [...currentIds, interruptedId],
       );
-    }, 140);
-
-    return () => window.clearTimeout(timeoutId);
+      recentSpeakingAssistantIdRef.current = null;
+    }
   }, [activeLiveTranscriptId, agent.state, transcriptEntries]);
 
   const activeInterruptedIds = useMemo(
@@ -611,7 +619,7 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     ];
   }, [agent.state, capabilities, livePartialEntry, session.isConnected]);
 
-  async function handleStartSession() {
+  const startCurrentSession = useCallback(async () => {
     try {
       setHasEnteredConsole(true);
       setIsActivatingConsole(true);
@@ -646,6 +654,42 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
 
       setSessionError(message);
     }
+  }, [controlMode, isMuted, session]);
+
+  useEffect(() => {
+    if (!pendingSessionStart) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function startPendingSession() {
+      await startCurrentSession();
+      if (!cancelled) {
+        setPendingSessionStart(false);
+      }
+    }
+
+    void startPendingSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingSessionStart, startCurrentSession]);
+
+  async function handleStartSession() {
+    if (pendingSessionStart) {
+      return;
+    }
+
+    if (needsFreshSession) {
+      setPendingSessionStart(true);
+      setNeedsFreshSession(false);
+      setSessionSeed((currentSeed) => currentSeed + 1);
+      return;
+    }
+
+    await startCurrentSession();
   }
 
   async function handleEndSession() {
@@ -653,10 +697,11 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
     setTextInputError(null);
     setIsPressingToTalk(false);
     resetTranscriptState();
+    setPendingSessionStart(false);
     if (session.isConnected) {
       await session.end();
     }
-    setSessionSeed((currentSeed) => currentSeed + 1);
+    setNeedsFreshSession(true);
   }
 
   async function handleClearSession() {
@@ -799,10 +844,15 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                 <button
                   type="button"
                   onClick={() => void handleStartSession()}
-                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[color:var(--color-primary)]/35 bg-[linear-gradient(135deg,rgba(124,92,255,0.9),rgba(25,211,255,0.48))] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_38px_rgba(124,92,255,0.28)] transition hover:brightness-110"
+                  disabled={pendingSessionStart}
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[color:var(--color-primary)]/35 bg-[linear-gradient(135deg,rgba(124,92,255,0.9),rgba(25,211,255,0.48))] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_38px_rgba(124,92,255,0.28)] transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
                 >
-                  <Mic className="h-4 w-4" />
-                  Start conversation
+                  {pendingSessionStart ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                  {pendingSessionStart ? "Preparing session..." : "Start conversation"}
                 </button>
 
                 <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--color-text-secondary)]">
@@ -877,10 +927,15 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                       <button
                         type="button"
                         onClick={() => void handleStartSession()}
-                        className="control-button"
+                        disabled={pendingSessionStart}
+                        className="control-button disabled:cursor-wait disabled:opacity-70"
                       >
-                        <Mic className="h-4 w-4" />
-                        Start session
+                        {pendingSessionStart ? (
+                          <LoaderCircle className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Mic className="h-4 w-4" />
+                        )}
+                        {pendingSessionStart ? "Preparing..." : "Start session"}
                       </button>
                     )}
 
