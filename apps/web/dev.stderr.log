@@ -1,0 +1,9 @@
+⚠ Port 3000 is in use by process 2076, using available port 3001 instead.
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          2076
+- Dir:          C:\Villaex Technologies\FastAPI\ai-voice-agent\apps\web
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 2076 /F to stop it.

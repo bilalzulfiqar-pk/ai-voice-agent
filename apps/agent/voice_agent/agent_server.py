@@ -50,7 +50,6 @@ server = AgentServer(
 
 def prewarm(proc: JobProcess) -> None:
     proc.userdata["vad"] = silero.VAD.load()
-    proc.userdata["turn_detector"] = MultilingualModel()
 
 
 server.setup_fnc = prewarm
@@ -82,13 +81,15 @@ async def _publish_metadata(ctx: JobContext) -> None:
 
 @server.rtc_session(agent_name=settings.livekit_agent_name)
 async def entrypoint(ctx: JobContext) -> None:
+    turn_detector = MultilingualModel()
+
     session = AgentSession(
         stt=inference.STT(model=settings.stt_model),
         llm=inference.LLM(model=settings.llm_model),
         tts=inference.TTS(model=settings.tts_model, voice=settings.tts_voice),
         vad=ctx.proc.userdata["vad"],
         turn_handling=TurnHandlingOptions(
-            turn_detection=ctx.proc.userdata["turn_detector"],
+            turn_detection=turn_detector,
             preemptive_generation={"enabled": True},
         ),
     )

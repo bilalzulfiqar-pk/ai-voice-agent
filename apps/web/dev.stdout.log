@@ -1,0 +1,10 @@
+
+> ai-voice-agent-web@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.2.4 (webpack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.32:3001
+- Environments: .env.local
+✓ Ready in 1196ms
+[?25h
