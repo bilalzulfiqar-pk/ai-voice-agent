@@ -1099,9 +1099,6 @@ function VoiceAgentShell({ onSessionReset }: VoiceAgentShellProps) {
                         label={`${decoratedEntries.length} turns`}
                         tone="neutral"
                       />
-                      {livePartialEntry && (
-                        <StatusChip label="Live transcript" tone="live" />
-                      )}
                     </div>
                   </div>
 
