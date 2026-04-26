@@ -1,118 +1,133 @@
-# ai-voice-agent / Auralis
+# Auralis - AI Voice Agent
 
-Auralis is a browser-based realtime AI voice agent built with LiveKit, Next.js, and a Python LiveKit worker.
+Auralis is a browser-based realtime AI voice agent built with **LiveKit**, **Next.js**, and a **Python LiveKit agent worker**.
 
-The app is centered on open-ended conversation, live transcript rendering, agent state, interruptions, and visible voice-pipeline status.
+It is designed as a focused realtime voice-agent demo: a voice-native AI studio with live conversation, transcript rendering, turn detection, interruption handling, and a visible voice pipeline.
 
-## What It Does
+## Features
 
-- Connects the browser to a LiveKit session
-- Captures microphone audio and plays agent audio back in realtime
-- Runs a LiveKit voice pipeline with:
+- Browser-based voice conversation UI
+- Realtime LiveKit session connection
+- Python LiveKit agent worker
+- Voice pipeline with:
   - BVC noise cancellation
   - Silero VAD
-  - Deepgram STT
-  - OpenAI LLM
-  - Cartesia TTS
   - LiveKit multilingual turn detection
+  - Deepgram STT through LiveKit Inference
+  - OpenAI LLM through LiveKit Inference
+  - Cartesia TTS through LiveKit Inference
   - preemptive generation
   - adaptive interruption handling
-- Shows:
-  - listening / thinking / speaking states
-  - live user and agent transcript
-  - partial transcript updates
-  - interrupted assistant speech markers
-  - a pipeline status rail
-- Supports:
-  - auto mode
-  - push-to-talk mode
+- Live transcript for user and agent messages
+- Agent state display:
+  - listening
+  - thinking
+  - speaking
+  - reconnecting / failed states
+- Voice controls:
+  - start / end session
   - mute / unmute
-  - typed fallback messages
-  - clear session reset
-  - debug drawer
+  - auto mode
+  - push-to-talk
+  - text fallback
+  - clear session
+- Dark aurora UI with animated voice orb
+- Collapsible system status and debug panels
+
+## What Auralis Can Do
+
+Auralis is intentionally conversational in the current version. It can answer questions, explain concepts, brainstorm ideas, help with writing, summarize content the user provides, and reason through coding or product ideas.
+
+It does **not** currently browse the web, check live weather, set reminders, play music, book meetings, send email, access local files, or control external apps.
 
 ## Architecture
 
 ```text
-Browser (Next.js)
-  -> POST /api/livekit/token
-  -> joins LiveKit room with Session API
-  -> streams mic audio and renders transcript/state
+Browser / Next.js
+  -> requests a LiveKit token from /api/livekit/token
+  -> joins a LiveKit room
+  -> streams microphone audio
+  -> plays agent audio
+  -> renders transcript, state, controls, and pipeline status
 
-LiveKit
-  -> room transport
-  -> turn handling
-  -> text + transcript streams
-  -> interruption-aware voice session plumbing
+LiveKit Cloud
+  -> realtime media transport
+  -> room/session orchestration
+  -> transcript and text streams
+  -> LiveKit Inference
 
 Python Agent Worker
-  -> STT: deepgram/flux-general-en
-  -> LLM: openai/gpt-4.1-mini
-  -> TTS: cartesia/sonic-3
-  -> VAD: Silero
-  -> turn detector: MultilingualModel
+  -> VAD + turn detection
+  -> STT -> LLM -> TTS voice pipeline
+  -> interruption handling
+  -> short in-session context
   -> publishes app.voice metadata to the frontend
 ```
 
-## Frontend Shape
+## Project Structure
 
-The web app uses a dark aurora design with:
+```text
+.
++-- apps
+|   +-- agent
+|   |   +-- agent.py
+|   |   +-- requirements.txt
+|   |   +-- tests
+|   |   +-- voice_agent
+|   |       +-- agent_server.py
+|   |       +-- config.py
+|   |       +-- models.py
+|   +-- web
+|       +-- package.json
+|       +-- public
+|       +-- src
+|           +-- app
+|           +-- components
+|           +-- lib
++-- package.json
++-- README.md
+```
 
-- premium header
-- central animated voice orb
-- live transcript panel
-- control deck
-- pipeline rail
-- collapsible debug drawer
+## Tech Stack
 
-The main UI entrypoint is [voice-agent-app.tsx](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/web/src/components/voice-agent-app.tsx).
+- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- **Voice transport:** LiveKit
+- **Agent runtime:** LiveKit Agents for Python
+- **STT:** `deepgram/flux-general-en`
+- **LLM:** `openai/gpt-4.1-mini`
+- **TTS:** `cartesia/sonic-3`
+- **VAD:** Silero
+- **Turn detection:** LiveKit multilingual turn detector
 
-## Backend Shape
+The default model stack uses **LiveKit Inference**, so you do not need separate OpenAI, Deepgram, or Cartesia API keys for the current setup. Usage still consumes LiveKit Cloud quota or billing credits.
 
-The Python worker now lives in [apps/agent/voice_agent](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/agent/voice_agent).
+## Prerequisites
 
-Key files:
+- Node.js 18+
+- Python 3.11+
+- A LiveKit Cloud project
+- LiveKit project credentials:
+  - `LIVEKIT_URL`
+  - `LIVEKIT_API_KEY`
+  - `LIVEKIT_API_SECRET`
 
-- [agent_server.py](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/agent/voice_agent/agent_server.py)
-- [config.py](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/agent/voice_agent/config.py)
-- [models.py](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/agent/voice_agent/models.py)
+## Environment Setup
 
-Frontend metadata contract:
-
-- `app.voice.capabilities`
-- `app.voice.session`
-
-## Local Setup
-
-### 1. Web app
+Create the frontend environment file:
 
 ```powershell
-cd "C:\Villaex Technologies\FastAPI\ai-voice-agent\apps\web"
+cd apps/web
 Copy-Item .env.example .env.local
-npm install
-npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-### 2. Agent worker
-
-If this repository was copied from the older project, rebuild the virtual environment instead of trusting the copied `.venv`.
+Create the agent environment file:
 
 ```powershell
-cd "C:\Villaex Technologies\FastAPI\ai-voice-agent\apps\agent"
-Remove-Item -LiteralPath .venv -Recurse -Force
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+cd ../agent
 Copy-Item .env.example .env
-python agent.py dev
 ```
 
-Python 3.11+ is the target for this setup.
-
-## Environment Variables
+Update both files with your LiveKit project values.
 
 ### `apps/web/.env.local`
 
@@ -120,6 +135,7 @@ Python 3.11+ is the target for this setup.
 LIVEKIT_URL=wss://your-project.livekit.cloud
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
+
 NEXT_PUBLIC_LIVEKIT_URL=wss://your-project.livekit.cloud
 NEXT_PUBLIC_LIVEKIT_AGENT_NAME=auralis-agent
 ```
@@ -131,15 +147,50 @@ LIVEKIT_URL=wss://your-project.livekit.cloud
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
 LIVEKIT_AGENT_NAME=auralis-agent
+
 AURALIS_STT_MODEL=deepgram/flux-general-en
 AURALIS_LLM_MODEL=openai/gpt-4.1-mini
 AURALIS_TTS_MODEL=cartesia/sonic-3
 AURALIS_TTS_VOICE=9626c31c-bec5-4cca-baa8-f8ba9e84c8bc
 ```
 
-## Scripts
+For lower-cost testing, you can set:
 
-From the repo root:
+```env
+AURALIS_LLM_MODEL=openai/gpt-4.1-nano
+```
+
+## Install And Run
+
+Use two terminals: one for the agent worker and one for the web app.
+
+### 1. Start the agent worker
+
+```powershell
+cd apps/agent
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python agent.py download-files
+python agent.py dev
+```
+
+`download-files` downloads the local VAD and turn detection assets used by the LiveKit plugins.
+
+### 2. Start the web app
+
+```powershell
+cd apps/web
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Useful Commands
+
+From the repository root:
 
 ```powershell
 npm run lint:web
@@ -147,36 +198,48 @@ npm run typecheck:web
 npm run build:web
 ```
 
-From [apps/agent](/C:/Villaex%20Technologies/FastAPI/ai-voice-agent/apps/agent):
+From `apps/agent`:
 
 ```powershell
-python -m unittest discover -s tests -v
+.\.venv\Scripts\python -m unittest discover -s tests -v
 ```
 
-## Tests Included
+## Manual Test Checklist
 
-- web lint
-- web typecheck
-- web production build
-- agent config serialization tests
-- agent metadata payload tests
+After starting both the agent and web app:
 
-## Scope Notes
+- Open the app and click **Start conversation**
+- Allow microphone permission
+- Confirm the agent greets you
+- Ask a short question and verify:
+  - user transcript appears
+  - agent transcript appears
+  - agent state changes between listening / thinking / speaking
+  - audio playback works
+- Try interrupting the agent while it is speaking
+- Test mute / unmute
+- Test push-to-talk mode
+- Test text fallback
+- End the session and start a new one
+- Open the system status and debug panels
 
-This MVP intentionally does not include:
+## Notes About Logs
 
-- long-term memory
-- database persistence
-- calendar workflows
-- CRM integrations
-- auth
-- telephony
-- multi-agent orchestration
-- RAG
+Some LiveKit development logs are expected:
+
+- `closing agent session due to participant disconnect` appears when the browser leaves the room.
+- Adaptive interruption can occasionally fall back to VAD-based interruption if the cloud interruption inference request times out.
+
+## Scope
+
+Auralis focuses on realtime voice conversation rather than external tool automation.
+
+This version is intentionally scoped to voice chat, transcript rendering, turn detection, interruptions, and session controls. Features like long-term memory, web browsing, calendar actions, telephony, RAG, latency analytics, and multi-agent workflows are outside the current scope.
 
 ## References
 
-- [LiveKit agent sessions](https://docs.livekit.io/agents/logic/sessions/)
-- [LiveKit turns](https://docs.livekit.io/agents/logic/turns/)
-- [LiveKit frontend sessions](https://docs.livekit.io/frontends/build/sessions/)
-- [LiveKit voice-agent workshop](https://worksh.app/tutorials/livekit-voice-agent/introduction)
+- [LiveKit Agents](https://docs.livekit.io/agents/)
+- [LiveKit Agent Sessions](https://docs.livekit.io/agents/logic/sessions/)
+- [LiveKit Turns](https://docs.livekit.io/agents/logic/turns/)
+- [LiveKit Frontend Sessions](https://docs.livekit.io/frontends/build/sessions/)
+- [LiveKit Voice Agent Workshop](https://worksh.app/tutorials/livekit-voice-agent/introduction)
