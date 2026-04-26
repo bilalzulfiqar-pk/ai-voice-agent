@@ -1,8 +1,20 @@
 # Auralis - AI Voice Agent
 
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![LiveKit](https://img.shields.io/badge/LiveKit_Agents-1.5-FF6B00?logo=livekit&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green?logo=open-source-initiative&logoColor=white)
+
 Auralis is a browser-based realtime AI voice agent built with **LiveKit**, **Next.js**, and a **Python LiveKit agent worker**.
 
 It is designed as a focused realtime voice-agent demo: a voice-native AI studio with live conversation, transcript rendering, turn detection, interruption handling, and a visible voice pipeline.
+
+## Demo
+
+![Auralis demo](assets/demo.gif)
 
 ## Features
 
