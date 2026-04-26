@@ -1,7 +1,7 @@
 # Auralis - AI Voice Agent
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
-![LiveKit](https://img.shields.io/badge/LiveKit_Agents-1.5-FF6B00?logo=livekit&logoColor=white)
+![LiveKit](https://img.shields.io/badge/LiveKit_Agents-1.5-0F172A?logo=livekit&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
